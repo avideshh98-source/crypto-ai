@@ -7,38 +7,26 @@ client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 st.title("📊 AI Crypto Scalp Tool (v5 - AI Brain)")
 
-coin = st.text_input(
-    "Enter coin (bitcoin, ethereum, solana)",
-    "bitcoin"
-)
+coin = st.text_input("Enter coin (bitcoin, ethereum, solana)", "bitcoin")
+
 
 # ---------------- PRICE ----------------
 def get_price(coin):
-    url = (
-        f"https://api.coingecko.com/api/v3/simple/price"
-        f"?ids={coin}&vs_currencies=usd"
-    )
-
-    r = requests.get(url, timeout=10)
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd"
+    r = requests.get(url)
     data = r.json()
-
     return float(data[coin]["usd"])
 
 
 # ---------------- RSI ----------------
 def get_rsi(coin):
-    url = (
-        f"https://api.coingecko.com/api/v3/coins/{coin}"
-        f"/market_chart?vs_currency=usd&days=1"
-    )
-
-    r = requests.get(url, timeout=10)
+    url = f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart?vs_currency=usd&days=1"
+    r = requests.get(url)
     data = r.json()
 
     prices = [p[1] for p in data["prices"]]
 
-    gains = []
-    losses = []
+    gains, losses = [], []
 
     for i in range(1, len(prices)):
         change = prices[i] - prices[i - 1]
@@ -70,3 +58,53 @@ def analyze(rsi):
         return "LONG", 75, "RSI oversold"
     else:
         return "NO TRADE", 60, "Market neutral"
+
+
+# ---------------- AI BRAIN ----------------
+def ai_brain(price, rsi, signal):
+    prompt = f"""
+You are a crypto trading assistant.
+
+Price: {price}
+RSI: {rsi}
+Signal: {signal}
+
+Explain:
+- Market condition
+- Trade decision (YES/NO)
+- Risk level
+- Short reason
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
+
+
+# ---------------- MAIN ----------------
+if st.button("Analyze Trade"):
+    try:
+        price = get_price(coin)
+        rsi = get_rsi(coin)
+
+        direction, confidence, reason = analyze(rsi)
+
+        st.subheader("📊 Market Data")
+        st.write("Price:", price)
+        st.write("RSI:", rsi)
+
+        st.subheader("🤖 Signal")
+        st.write("Direction:", direction)
+        st.write("Confidence:", confidence)
+        st.write("Reason:", reason)
+
+        ai_result = ai_brain(price, rsi, direction)
+
+        st.subheader("🧠 AI Brain")
+        st.write(ai_result)
+
+    except Exception as e:
+        st.error(f"Error: {e}")

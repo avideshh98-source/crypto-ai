@@ -100,10 +100,12 @@ if st.button("Analyze Trade"):
         st.write("Direction:", direction)
         st.write("Confidence:", confidence)
         st.write("Reason:", reason)
+
+        # 🧠 AI BRAIN
         ai_result = ai_brain(price, rsi, direction)
 
-st.subheader("🧠 AI Brain")
-st.write(ai_result)
+        st.subheader("🧠 AI Brain")
+        st.write(ai_result)
 
     except Exception as e:
         st.error(f"Error: {e}")

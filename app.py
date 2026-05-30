@@ -69,4 +69,4 @@ def analyze(rsi):
     elif rsi < 30:
         return "LONG", 75, "RSI oversold"
     else:
-        return "NO TRA
+        return "NO TRADE", 60, "Market neutral"

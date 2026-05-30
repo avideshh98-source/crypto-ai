@@ -101,7 +101,12 @@ if st.button("Analyze Trade"):
         st.write("Confidence:", confidence)
         st.write("Reason:", reason)
 
-        def ai_brain(price, rsi, signal):
+        from openai import OpenAI
+
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+
+def ai_brain(price, rsi, signal):
     prompt = f"""
 You are a crypto scalping assistant.
 

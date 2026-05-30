@@ -3,22 +3,18 @@ import requests
 
 st.title("📊 AI Crypto Scalp Tool (v2)")
 
-symbol = st.text_input("Enter coin", "BTCUSDT")
+symbol = st.text_input("Enter coin", "bitcoin")
 
 def get_price(symbol):
     try:
-        url = f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}"
+        coin = symbol.replace("USDT", "").lower()
+
+        url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd"
         response = requests.get(url, timeout=5)
-
-        st.write("DEBUG STATUS:", response.status_code)
-        st.write("DEBUG TEXT:", response.text)
-
         data = response.json()
 
-        return float(data["price"])
-
-    except Exception as e:
-        st.error(f"Error: {e}")
+        return float(data[coin]["usd"])
+    except:
         return None
 def simple_ai_analysis(price):
     # Simple rule-based demo logic

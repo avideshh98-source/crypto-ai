@@ -1,4 +1,9 @@
+import streamlit as st
+import requests
+import pandas as pd
+import openai
 
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.title("📊 AI Crypto Scalp Tool (v4 - Real RSI)")
 

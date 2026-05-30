@@ -4,7 +4,7 @@ import google.generativeai as genai
 
 # ---------------- GEMINI SETUP ----------------
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-pro")
+model = genai.GenerativeModel("gemini-pro")
 
 st.title("📊 AI Crypto Scalp Tool (Gemini AI)")
 

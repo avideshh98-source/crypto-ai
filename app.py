@@ -5,7 +5,7 @@ st.title("📊 AI Crypto Scalp Tool (v2)")
 
 symbol = st.text_input("Enter coin", "BTCUSDT")
 
-dedef get_price(symbol):
+dedefdef get_price(symbol):
     url = f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}"
     
     response = requests.get(url)

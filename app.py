@@ -6,7 +6,7 @@ import google.generativeai as genai
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-st.title("📊 AI Crypto Scalp Tool (Gemini Version)")
+st.title("📊 AI Crypto Scalp Tool (Gemini AI)")
 
 coin = st.text_input("Enter coin (bitcoin, ethereum, solana)", "bitcoin")
 
@@ -55,27 +55,27 @@ def get_rsi(coin):
 # ---------------- SIGNAL ----------------
 def analyze(rsi):
     if rsi > 70:
-        return "SHORT", 75, "Overbought"
+        return "SHORT", 75, "Overbought market"
     elif rsi < 30:
-        return "LONG", 75, "Oversold"
+        return "LONG", 75, "Oversold market"
     else:
-        return "NO TRADE", 60, "Neutral zone"
+        return "NO TRADE", 60, "Neutral market"
 
 
 # ---------------- AI BRAIN (GEMINI) ----------------
 def ai_brain(price, rsi, signal):
-
     prompt = f"""
 You are a professional crypto trading assistant.
 
-Market Data:
-- Price: {price}
-- RSI: {rsi}
-- Signal: {signal}
+Analyze this data:
 
-Give:
+Price: {price}
+RSI: {rsi}
+Signal: {signal}
+
+Return:
 1. Market explanation
-2. Trade decision (YES / NO)
+2. Trade decision (YES or NO)
 3. Risk level (LOW / MEDIUM / HIGH)
 4. Short reason
 """
@@ -97,14 +97,14 @@ if st.button("Analyze Trade"):
         st.write("Price:", price)
         st.write("RSI:", rsi)
 
-        st.subheader("🤖 Signal")
+        st.subheader("📈 Signal")
         st.write("Direction:", direction)
         st.write("Confidence:", confidence)
         st.write("Reason:", reason)
 
         ai_result = ai_brain(price, rsi, direction)
 
-        st.subheader("🧠 AI Brain (Gemini)")
+        st.subheader("🧠 AI Brain")
         st.write(ai_result)
 
     except Exception as e:

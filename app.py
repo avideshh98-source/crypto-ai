@@ -5,6 +5,11 @@ from google import genai
 # ---------------- GEMINI SETUP ----------------
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
+import google.generativeai as genai
+
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+model = genai.GenerativeModel("gemini-pro")
 st.title("📊 AI Crypto Scalp Tool (Gemini AI)")
 
 coin = st.text_input("Enter coin (bitcoin, ethereum, solana)", "bitcoin")

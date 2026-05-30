@@ -3,7 +3,9 @@ import requests
 import pandas as pd
 import openai
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+from openai import OpenAI
+
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 st.title("📊 AI Crypto Scalp Tool (v4 - Real RSI)")
 
@@ -78,10 +80,8 @@ Give:
 Be short and clear.
 """
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+
+
 
     return response["choices"][0]["message"]["content"]
 # ---------------- MAIN ----------------
@@ -101,11 +101,27 @@ if st.button("Analyze Trade"):
         st.write("Confidence:", confidence)
         st.write("Reason:", reason)
 
-        # 🧠 AI BRAIN
-        ai_result = ai_brain(price, rsi, direction)
+        def ai_brain(price, rsi, signal):
+    prompt = f"""
+You are a crypto scalping assistant.
 
-        st.subheader("🧠 AI Brain")
-        st.write(ai_result)
+Market Data:
+- Price: {price}
+- RSI: {rsi}
+- Signal: {signal}
 
-    except Exception as e:
-        st.error(f"Error: {e}")
+Give:
+1. Simple market explanation
+2. Should we trade? (YES / NO)
+3. Risk level (LOW / MEDIUM / HIGH)
+4. One short reason
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response.choices[0].message.content

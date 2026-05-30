@@ -1,29 +1,38 @@
 import streamlit as st
 import requests
-import pandas as pd
 from openai import OpenAI
 
-# ---------------- OPENAI CLIENT ----------------
+# ---------------- OPENAI ----------------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+st.title("📊 AI Crypto Scalp Tool (v5 - AI Brain)")
 
-st.title("📊 AI Crypto Scalp Tool (v4 - Real RSI)")
-
-coin = st.text_input("Enter coin (bitcoin, ethereum, solana)", "bitcoin")
-
+coin = st.text_input(
+    "Enter coin (bitcoin, ethereum, solana)",
+    "bitcoin"
+)
 
 # ---------------- PRICE ----------------
 def get_price(coin):
-    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd"
-    r = requests.get(url)
+    url = (
+        f"https://api.coingecko.com/api/v3/simple/price"
+        f"?ids={coin}&vs_currencies=usd"
+    )
+
+    r = requests.get(url, timeout=10)
     data = r.json()
+
     return float(data[coin]["usd"])
 
 
-# ---------------- REAL RSI ----------------
+# ---------------- RSI ----------------
 def get_rsi(coin):
-    url = f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart?vs_currency=usd&days=1"
-    r = requests.get(url)
+    url = (
+        f"https://api.coingecko.com/api/v3/coins/{coin}"
+        f"/market_chart?vs_currency=usd&days=1"
+    )
+
+    r = requests.get(url, timeout=10)
     data = r.json()
 
     prices = [p[1] for p in data["prices"]]
@@ -33,6 +42,7 @@ def get_rsi(coin):
 
     for i in range(1, len(prices)):
         change = prices[i] - prices[i - 1]
+
         if change > 0:
             gains.append(change)
             losses.append(0)
@@ -49,68 +59,14 @@ def get_rsi(coin):
     rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
 
-    return rsi
+    return round(rsi, 2)
 
 
-# ---------------- SIGNAL LOGIC ----------------
-def analyze(price, rsi):
+# ---------------- SIGNAL ----------------
+def analyze(rsi):
     if rsi > 70:
-        return "SHORT", 75, "RSI overbought → possible pullback"
+        return "SHORT", 75, "RSI overbought"
     elif rsi < 30:
-        return "LONG", 75, "RSI oversold → possible bounce"
+        return "LONG", 75, "RSI oversold"
     else:
-        return "NO TRADE", 60, "Market neutral zone"
-
-
-# ---------------- AI BRAIN ----------------
-def ai_brain(price, rsi, signal):
-    prompt = f"""
-You are a crypto scalping assistant.
-
-Market Data:
-- Price: {price}
-- RSI: {rsi}
-- Signal: {signal}
-
-Give:
-1. Simple market explanation
-2. Should we trade? (YES / NO)
-3. Risk level (LOW / MEDIUM / HIGH)
-4. One short reason
-"""
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-
-    return response.choices[0].message.content
-
-
-# ---------------- MAIN ----------------
-if st.button("Analyze Trade"):
-    try:
-        price = get_price(coin)
-        rsi = get_rsi(coin)
-
-        direction, confidence, reason = analyze(price, rsi)
-
-        st.subheader("📊 Market Data")
-        st.write("Price:", price)
-        st.write("RSI:", round(rsi, 2))
-
-        st.subheader("📈 AI Signal")
-        st.write("Direction:", direction)
-        st.write("Confidence:", confidence)
-        st.write("Reason:", reason)
-
-        # 🧠 AI OUTPUT
-        ai_result = ai_brain(price, rsi, direction)
-
-        st.subheader("🧠 AI Brain")
-        st.write(ai_result)
-
-    except Exception as e:
-        st.error(f"Error: {e}")
+        return "NO TRA

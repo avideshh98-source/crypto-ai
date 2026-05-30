@@ -60,7 +60,30 @@ def analyze(price, rsi):
     else:
         return "NO TRADE", 60, "Market neutral zone"
 
+def ai_brain(price, rsi, signal):
+    prompt = f"""
+You are a crypto scalping assistant.
 
+Market Data:
+- Price: {price}
+- RSI: {rsi}
+- Signal: {signal}
+
+Give:
+1. Simple market explanation
+2. Should we trade? (YES / NO)
+3. Risk level (LOW / MEDIUM / HIGH)
+4. One short reason
+
+Be short and clear.
+"""
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response["choices"][0]["message"]["content"]
 # ---------------- MAIN ----------------
 if st.button("Analyze Trade"):
     try:
@@ -77,6 +100,10 @@ if st.button("Analyze Trade"):
         st.write("Direction:", direction)
         st.write("Confidence:", confidence)
         st.write("Reason:", reason)
+        ai_result = ai_brain(price, rsi, direction)
+
+st.subheader("🧠 AI Brain")
+st.write(ai_result)
 
     except Exception as e:
         st.error(f"Error: {e}")

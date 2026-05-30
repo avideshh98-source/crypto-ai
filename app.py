@@ -8,23 +8,19 @@ client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 st.title("📊 AI Crypto Scalp Tool (Gemini AI)")
 
 coin = st.text_input("Enter coin (bitcoin, ethereum, solana)", "bitcoin")
-
-
-# ---------------- PRICE ----------------
-def get_price(coin):
-    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd"
-    r = requests.get(url)
-    data = r.json()
-    return float(data[coin]["usd"])
-
-
-# ---------------- RSI ----------------
 def get_rsi(coin):
     url = f"https://api.coingecko.com/api/v3/coins/{coin}/market_chart?vs_currency=usd&days=1"
     r = requests.get(url)
     data = r.json()
 
+    # ❗ safety check
+    if "prices" not in data:
+        return 50  # neutral fallback
+
     prices = [p[1] for p in data["prices"]]
+
+    if len(prices) < 2:
+        return 50
 
     gains, losses = [], []
 
@@ -38,11 +34,30 @@ def get_rsi(coin):
             gains.append(0)
             losses.append(abs(change))
 
-    avg_gain = sum(gains) / len(gains)
-    avg_loss = sum(losses) / len(losses)
+    avg_gain = sum(gains) / max(len(gains), 1)
+    avg_loss = sum(losses) / max(len(losses), 1)
 
     if avg_loss == 0:
         return 100
+
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+
+    return round(rsi, 2)
+
+# ---------------- PRICE ----------------
+
+def get_price(coin):
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd"
+    r = requests.get(url)
+    data = r.json()
+
+    if coin not in data:
+        return 0
+
+    return float(data[coin]["usd"])
+
+# ---------------- RSI ----------------
 
     rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))

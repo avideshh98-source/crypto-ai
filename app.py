@@ -28,13 +28,13 @@ def simple_ai_analysis(price):
         reason = "Price is lower zone → possible bounce"
 
     return direction, confidence, reason
-
 if st.button("Analyze Trade"):
     price = get_price(symbol)
 
-if price is None:
-    st.error("Failed to fetch market data. Try again.")
-    st.stop()
+    if price is None:
+        st.error("Failed to fetch market data. Try again.")
+        st.stop()
+
     direction, confidence, reason = simple_ai_analysis(price)
 
     st.subheader("Market Data")

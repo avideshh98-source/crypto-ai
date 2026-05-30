@@ -1,7 +1,5 @@
-import streamlit as st
-import requests
-import pandas as pd
-import openai
+
+impor
 
 st.title("📊 AI Crypto Scalp Tool (v4 - Real RSI)")
 

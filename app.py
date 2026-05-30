@@ -53,30 +53,60 @@ def get_rsi(coin):
 # ---------------- SIGNAL ----------------
 def analyze(rsi):
     if rsi > 70:
-        return "SHORT", 75, "Overbought market"
+        return "SHORT", 75, "Overbought"
     elif rsi < 30:
-        return "LONG", 75, "Oversold market"
+        return "LONG", 75, "Oversold"
     else:
-        return "NO TRADE", 60, "Neutral market"
+        return "NO TRADE", 60, "Neutral"
 
 
-# ---------------- AI BRAIN (GEMINI) ----------------
+# ---------------- AI BRAIN ----------------
 def ai_brain(price, rsi, signal):
 
     prompt = f"""
 You are a crypto trading assistant.
 
-Market Data:
-- Price: {price}
-- RSI: {rsi}
-- Signal: {signal}
+Price: {price}
+RSI: {rsi}
+Signal: {signal}
 
-Give:
-1. Market explanation
-2. Trade decision (YES or NO)
-3. Risk level (LOW / MEDIUM / HIGH)
-4. Short reason
+Explain:
+- Market condition
+- Trade decision (YES/NO)
+- Risk level (LOW/MEDIUM/HIGH)
+- Short reason
 """
 
     response = client.models.generate_content(
         model="gemini-1.5-flash",
+        contents=prompt
+    )
+
+    return response.text
+
+
+# ---------------- MAIN ----------------
+if st.button("Analyze Trade"):
+
+    try:
+        price = get_price(coin)
+        rsi = get_rsi(coin)
+
+        direction, confidence, reason = analyze(rsi)
+
+        st.subheader("📊 Market Data")
+        st.write("Price:", price)
+        st.write("RSI:", rsi)
+
+        st.subheader("📈 Signal")
+        st.write("Direction:", direction)
+        st.write("Confidence:", confidence)
+        st.write("Reason:", reason)
+
+        ai_result = ai_brain(price, rsi, direction)
+
+        st.subheader("🧠 AI Brain")
+        st.write(ai_result)
+
+    except Exception as e:
+        st.error(f"Error: {e}")

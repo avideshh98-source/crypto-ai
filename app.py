@@ -4,17 +4,16 @@ import requests
 st.title("📊 AI Crypto Scalp Tool (v2)")
 
 symbol = st.text_input("Enter coin", "BTCUSDT")
-
 def get_price(symbol):
-    url = f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}"
-    
-    response = requests.get(url)
-    data = response.json()
+    try:
+        url = f"https://fapi.binance.com/fapi/v1/ticker/price?symbol={symbol}"
+        response = requests.get(url, timeout=5)
+        data = response.json()
 
-    if "price" in data:
-        return float(data["price"])
-    else:
+        return float(data.get("price", None))
+    except:
         return None
+
 def simple_ai_analysis(price):
     # Simple rule-based demo logic
 

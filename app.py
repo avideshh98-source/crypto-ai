@@ -1,14 +1,9 @@
 import streamlit as st
 import requests
-import google.generativeai as genai
+from google import genai
 
 # ---------------- GEMINI SETUP ----------------
-import google.generativeai as genai
-
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-
-model = genai.GenerativeModel("models/gemini-pro")
-
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 st.title("📊 AI Crypto Scalp Tool (Gemini AI)")
 
@@ -31,8 +26,7 @@ def get_rsi(coin):
 
     prices = [p[1] for p in data["prices"]]
 
-    gains = []
-    losses = []
+    gains, losses = [], []
 
     for i in range(1, len(prices)):
         change = prices[i] - prices[i - 1]
@@ -68,48 +62,21 @@ def analyze(rsi):
 
 # ---------------- AI BRAIN (GEMINI) ----------------
 def ai_brain(price, rsi, signal):
+
     prompt = f"""
-You are a professional crypto trading assistant.
+You are a crypto trading assistant.
 
-Analyze this data:
+Market Data:
+- Price: {price}
+- RSI: {rsi}
+- Signal: {signal}
 
-Price: {price}
-RSI: {rsi}
-Signal: {signal}
-
-Return:
+Give:
 1. Market explanation
 2. Trade decision (YES or NO)
 3. Risk level (LOW / MEDIUM / HIGH)
 4. Short reason
 """
 
-    response = model.generate_content(prompt)
-
-    return response.text
-
-
-# ---------------- MAIN ----------------
-if st.button("Analyze Trade"):
-    try:
-        price = get_price(coin)
-        rsi = get_rsi(coin)
-
-        direction, confidence, reason = analyze(rsi)
-
-        st.subheader("📊 Market Data")
-        st.write("Price:", price)
-        st.write("RSI:", rsi)
-
-        st.subheader("📈 Signal")
-        st.write("Direction:", direction)
-        st.write("Confidence:", confidence)
-        st.write("Reason:", reason)
-
-        ai_result = ai_brain(price, rsi, direction)
-
-        st.subheader("🧠 AI Brain")
-        st.write(ai_result)
-
-    except Exception as e:
-        st.error(f"Error: {e}")
+    response = client.models.generate_content(
+        model="gemini-1.5-flash",

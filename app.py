@@ -1,14 +1,13 @@
 import streamlit as st
 import requests
 import pandas as pd
-import openai
-
 from openai import OpenAI
 
+# ---------------- OPENAI CLIENT ----------------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-st.title("📊 AI Crypto Scalp Tool (v4 - Real RSI)")
 
+st.title("📊 AI Crypto Scalp Tool (v4 - Real RSI)")
 
 coin = st.text_input("Enter coin (bitcoin, ethereum, solana)", "bitcoin")
 
@@ -53,59 +52,17 @@ def get_rsi(coin):
     return rsi
 
 
-# ---------------- AI LOGIC ----------------
+# ---------------- SIGNAL LOGIC ----------------
 def analyze(price, rsi):
     if rsi > 70:
-        return "SHORT", 75, "Real RSI overbought → possible pullback"
+        return "SHORT", 75, "RSI overbought → possible pullback"
     elif rsi < 30:
-        return "LONG", 75, "Real RSI oversold → possible bounce"
+        return "LONG", 75, "RSI oversold → possible bounce"
     else:
         return "NO TRADE", 60, "Market neutral zone"
 
-def ai_brain(price, rsi, signal):
-    prompt = f"""
-You are a crypto scalping assistant.
 
-Market Data:
-- Price: {price}
-- RSI: {rsi}
-- Signal: {signal}
-
-Give:
-1. Simple market explanation
-2. Should we trade? (YES / NO)
-3. Risk level (LOW / MEDIUM / HIGH)
-4. One short reason
-
-Be short and clear.
-"""
-
-
-
-
-    return response["choices"][0]["message"]["content"]
-# ---------------- MAIN ----------------
-if st.button("Analyze Trade"):
-    try:
-        price = get_price(coin)
-        rsi = get_rsi(coin)
-
-        direction, confidence, reason = analyze(price, rsi)
-
-        st.subheader("Market Data")
-        st.write("Price:", price)
-        st.write("RSI:", round(rsi, 2))
-
-        st.subheader("AI Signal")
-        st.write("Direction:", direction)
-        st.write("Confidence:", confidence)
-        st.write("Reason:", reason)
-
-        from openai import OpenAI
-
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-
+# ---------------- AI BRAIN ----------------
 def ai_brain(price, rsi, signal):
     prompt = f"""
 You are a crypto scalping assistant.
@@ -130,3 +87,30 @@ Give:
     )
 
     return response.choices[0].message.content
+
+
+# ---------------- MAIN ----------------
+if st.button("Analyze Trade"):
+    try:
+        price = get_price(coin)
+        rsi = get_rsi(coin)
+
+        direction, confidence, reason = analyze(price, rsi)
+
+        st.subheader("📊 Market Data")
+        st.write("Price:", price)
+        st.write("RSI:", round(rsi, 2))
+
+        st.subheader("📈 AI Signal")
+        st.write("Direction:", direction)
+        st.write("Confidence:", confidence)
+        st.write("Reason:", reason)
+
+        # 🧠 AI OUTPUT
+        ai_result = ai_brain(price, rsi, direction)
+
+        st.subheader("🧠 AI Brain")
+        st.write(ai_result)
+
+    except Exception as e:
+        st.error(f"Error: {e}")

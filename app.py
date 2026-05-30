@@ -1,5 +1,4 @@
 
-impor
 
 st.title("📊 AI Crypto Scalp Tool (v4 - Real RSI)")
 

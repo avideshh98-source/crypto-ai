@@ -1,11 +1,12 @@
 import streamlit as st
 import requests
-from openai import OpenAI
+import google.generativeai as genai
 
-# ---------------- OPENAI ----------------
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# ---------------- GEMINI SETUP ----------------
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-st.title("📊 AI Crypto Scalp Tool (v5 - AI Brain)")
+st.title("📊 AI Crypto Scalp Tool (Gemini Version)")
 
 coin = st.text_input("Enter coin (bitcoin, ethereum, solana)", "bitcoin")
 
@@ -26,7 +27,8 @@ def get_rsi(coin):
 
     prices = [p[1] for p in data["prices"]]
 
-    gains, losses = [], []
+    gains = []
+    losses = []
 
     for i in range(1, len(prices)):
         change = prices[i] - prices[i - 1]
@@ -53,35 +55,34 @@ def get_rsi(coin):
 # ---------------- SIGNAL ----------------
 def analyze(rsi):
     if rsi > 70:
-        return "SHORT", 75, "RSI overbought"
+        return "SHORT", 75, "Overbought"
     elif rsi < 30:
-        return "LONG", 75, "RSI oversold"
+        return "LONG", 75, "Oversold"
     else:
-        return "NO TRADE", 60, "Market neutral"
+        return "NO TRADE", 60, "Neutral zone"
 
 
-# ---------------- AI BRAIN ----------------
+# ---------------- AI BRAIN (GEMINI) ----------------
 def ai_brain(price, rsi, signal):
+
     prompt = f"""
-You are a crypto trading assistant.
+You are a professional crypto trading assistant.
 
-Price: {price}
-RSI: {rsi}
-Signal: {signal}
+Market Data:
+- Price: {price}
+- RSI: {rsi}
+- Signal: {signal}
 
-Explain:
-- Market condition
-- Trade decision (YES/NO)
-- Risk level
-- Short reason
+Give:
+1. Market explanation
+2. Trade decision (YES / NO)
+3. Risk level (LOW / MEDIUM / HIGH)
+4. Short reason
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+    response = model.generate_content(prompt)
 
-    return response.choices[0].message.content
+    return response.text
 
 
 # ---------------- MAIN ----------------
@@ -103,7 +104,7 @@ if st.button("Analyze Trade"):
 
         ai_result = ai_brain(price, rsi, direction)
 
-        st.subheader("🧠 AI Brain")
+        st.subheader("🧠 AI Brain (Gemini)")
         st.write(ai_result)
 
     except Exception as e:
